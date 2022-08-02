@@ -1,5 +1,6 @@
 package study.querydsl;
 
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,9 +24,13 @@ public class QuerydslBasicTest {
     @Autowired
     EntityManager em;
 
+    JPAQueryFactory queryFactory;
+
 
     @BeforeEach
     public void before() {
+        queryFactory = new JPAQueryFactory(em);
+
         Team teamA = new Team("teamA");
         Team teamB = new Team("teamb");
         em.persist(teamA);
@@ -66,15 +71,37 @@ public class QuerydslBasicTest {
 
     @Test
     public void startQuerydsl() {
-        JPAQueryFactory jpaQueryFactory = new JPAQueryFactory(em);
+//        JPAQueryFactory jpaQueryFactory = new JPAQueryFactory(em);
 //        QMember m = new QMember("m");
 
-        Member findMember = jpaQueryFactory
+        Member findMember = queryFactory
                 .select(member)
                 .from(member)
                 .where(member.username.eq("member1"))
                 .fetchOne();
 
+        Assertions.assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+
+    @Test
+    public void search() {
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1")
+                        .and(member.age.eq(10)))
+                .fetchOne();
+        Assertions.assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+
+    @Test
+    public void searchAndParam() {
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .where(
+                        member.username.eq("member1"),
+                        member.age.eq(10) //null이 들어가면 무시해서 동적쿼리에 편하다.
+                )
+                .fetchOne();
         Assertions.assertThat(findMember.getUsername()).isEqualTo("member1");
     }
 }
