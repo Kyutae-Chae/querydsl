@@ -104,4 +104,28 @@ public class QuerydslBasicTest {
                 .fetchOne();
         Assertions.assertThat(findMember.getUsername()).isEqualTo("member1");
     }
+
+    @Test
+    public void resultFetch() {
+        List<Member> fetch = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        Member fetchOne = queryFactory
+                .selectFrom(member)
+                .where(member.age.eq(10))
+                .fetchOne();
+
+        Member fetchFir = queryFactory
+                .selectFrom(member)
+                .fetchFirst();
+
+        List<Long> fetch1 = queryFactory
+                .select(member.count())
+                .from(member)
+                .fetch();
+
+
+    }
+
 }
